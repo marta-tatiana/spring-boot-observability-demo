@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @RestController
 public class TestController {
@@ -24,10 +21,10 @@ public class TestController {
         return "It lives!";
     }
 
-    @RequestMapping("/compute")
-    public String compute() {
+    @RequestMapping("/compute_old")
+    public String compute_old() {
         double result = 0;
-        for (int i = 0; i < 100; ++i) {
+        for (int i = 0; i < 100000; ++i) {
             result += Math.sqrt(Math.random()*i);
 
         }
@@ -35,15 +32,49 @@ public class TestController {
         return ""+result;
     }
 
+    @RequestMapping("/compute")
+    public String compute() {
+        List<List<Boolean>> result = generate(21);
+        return ""+result.size();
+    }
+
     @RequestMapping("/allocate")
     public String allocate() {
-        Set<Object> objectSet = new HashSet<Object>();
-        List<String> arrayList = new ArrayList<String>(0);
-        for (int i = 0; i < 10000; ++i) {
-            arrayList.add("" + i + i + i);
-        }
-        objectSet.add(arrayList);
+        createDataSize(20);
         return "allocated";
+    }
+
+    private static String createDataSize(int msgSize) {
+        StringBuilder sb = new StringBuilder(msgSize);
+        for (int i=0; i<msgSize*(1000000/2); i++) {
+            sb.append('a');
+        }
+        return sb.toString();
+    }
+
+    public static List<List<Boolean>> generate(int n) {
+        if (n == 0) {
+            return Collections.emptyList();
+        }
+        if (n == 1) {
+            List<Boolean> zero = Collections.singletonList(false);
+            List<Boolean> one = Collections.singletonList(true);
+            List<List<Boolean>> result = new ArrayList<>();
+            result.add(zero);
+            result.add(one);
+            return result;
+        }
+        List<List<Boolean>> listOfLists = generate(n-1);
+        List<List<Boolean>> extendedList = new ArrayList<>();
+        for (List<Boolean> list : listOfLists){
+            List<Boolean> with0 = new ArrayList(list);
+            with0.add(false);
+            List<Boolean> with1 = new ArrayList(list);
+            with1.add(true);
+            extendedList.add(with0);
+            extendedList.add(with1);
+        }
+        return extendedList;
     }
 
     @RequestMapping("/exception")
